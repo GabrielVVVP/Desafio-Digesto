@@ -25,72 +25,118 @@ def webscraper(url): # Função de extrair informações de sites da web
     storage = [] # Lista com valores de SSD
     bandwidth = [] # Lista com valores de Bandwidth
     price = [] # Lista com valores de Preco
-   
+
     user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7' # Parâmetros do cabeçalho da requisição
     headers={'User-Agent':user_agent,} # Cabeçalho da Requisição. 
     request=urllib.request.Request(url,None,headers) # Requisição com cabeçalho e endereço
     html = urllib.request.urlopen(request) # Leitura da url
     bs = BeautifulSoup(html, 'lxml') #Aplicando a biblioteca BeautifulSoup na url lida
-    results = bs.select('div strong') # Resultados do filtro da Biblioteca Beautiful Soup para a identificação dos parâmetros requisitados (Storage, CPU, Memory, Bandwidth, Price)
-    
-    counter = 0 # Contador de tipo de filtro aplicado
-    count = False # Variável que quando acionada, irá incrementar o contador
-    reset = False # Variável que quando acionada, irá reiniciar o contador
-    for typing in results:
-        if counter==0: # Quando o contador for 0, aplicar o padrão regex de busca por valores de Storage
-            pattern = re.compile(r'[0-9]{2,3}\b GB')
-            storage_data = find_pattern(typing,pattern)
-            if storage_data != None: 
-                storage.append(storage_data)
-                count = True
-        elif counter==1: # Quando o contador for 1, aplicar o padrão regex de busca por valores de CPU
-            pattern = re.compile(r'[0-9]{1,2}\b CPU')
-            cpu_data = find_pattern(typing,pattern)
-            if cpu_data != None: 
-                cpu.append(cpu_data)
-                count = True
-        elif counter==2: # Quando o contador for 2, aplicar o padrão regex de busca por valores de Memory
-            pattern= re.compile(r'[0-9]{1,4}\b ((\bMB\b)|(\bGB\b))')
-            memory_data = find_pattern(typing,pattern)
-            if memory_data != None: 
-                memory.append(memory_data)
-                count = True
-        elif counter==3: # Quando o contador for 3, aplicar o padrão regex de busca por valores de Bandwidth
-            pattern = re.compile(r'([0-9]*[.])?[0-9]+\b TB')
-            bandwidth_data = find_pattern(typing,pattern)
-            if bandwidth_data != None: 
-                bandwidth.append(bandwidth_data)
-                count = True
-        elif counter==4: # Quando o contador for 4, aplicar o padrão regex de busca por valores de Price
-            pattern = re.compile(r'[\$]([0-9]*[.])?[0-9]+')
-            price_data = find_pattern(typing,pattern)
-            if price_data != None: 
-                price.append(price_data)
-                reset = True          
-        if count == True: # Quando a variável é acionada, o contador é incrementado
-            counter+=1
-            count = False
-        if reset == True: # Quando a variável é acionada, o contador é reiniciado para 0
-            counter=0 
-            reset = False
-    complete = [storage,cpu,memory,bandwidth,price] # Lista com todas as listas anteriores, que será retornada como resultado da função
-    return complete
 
-def print_tela(url): # Função de demonstrar resultados no terminal
+    if url == "https://www.vultr.com/products/cloud-compute/#pricing/":
+          
+        results = bs.select('div strong') # Resultados do filtro da Biblioteca Beautiful Soup para a identificação dos parâmetros requisitados (Storage, CPU, Memory, Bandwidth, Price)
+        
+        counter = 0 # Contador de tipo de filtro aplicado
+        count = False # Variável que quando acionada, irá incrementar o contador
+        reset = False # Variável que quando acionada, irá reiniciar o contador
+        for typing in results:
+            if counter==0: # Quando o contador for 0, aplicar o padrão regex de busca por valores de Storage
+                pattern = re.compile(r'[0-9]{2,3}\b GB')
+                storage_data = find_pattern(typing,pattern)
+                if storage_data != None: 
+                    storage.append(storage_data)
+                    count = True
+            elif counter==1: # Quando o contador for 1, aplicar o padrão regex de busca por valores de CPU
+                pattern = re.compile(r'[0-9]{1,2}\b CPU')
+                cpu_data = find_pattern(typing,pattern)
+                if cpu_data != None: 
+                    cpu.append(cpu_data)
+                    count = True
+            elif counter==2: # Quando o contador for 2, aplicar o padrão regex de busca por valores de Memory
+                pattern= re.compile(r'[0-9]{1,4}\b ((\bMB\b)|(\bGB\b))')
+                memory_data = find_pattern(typing,pattern)
+                if memory_data != None: 
+                    memory.append(memory_data)
+                    count = True
+            elif counter==3: # Quando o contador for 3, aplicar o padrão regex de busca por valores de Bandwidth
+                pattern = re.compile(r'([0-9]*[.])?[0-9]+\b TB')
+                bandwidth_data = find_pattern(typing,pattern)
+                if bandwidth_data != None: 
+                    bandwidth.append(bandwidth_data)
+                    count = True
+            elif counter==4: # Quando o contador for 4, aplicar o padrão regex de busca por valores de Price
+                pattern = re.compile(r'[\$]([0-9]*[.])?[0-9]+')
+                price_data = find_pattern(typing,pattern)
+                if price_data != None: 
+                    price.append(price_data)
+                    reset = True          
+            if count == True: # Quando a variável é acionada, o contador é incrementado
+                counter+=1
+                count = False
+            if reset == True: # Quando a variável é acionada, o contador é reiniciado para 0
+                counter=0 
+                reset = False
+        complete = [storage,cpu,memory,bandwidth,price] # Lista com todas as listas anteriores, que será retornada como resultado da função
+        return complete
+
+    else:
+
+        results = bs.select('div span.largePrice') # Resultados do filtro da Biblioteca Beautiful Soup para a identificação dos parâmetros requisitados (Price)
+        for typing in results:
+            price.append("$"+typing.text)
+
+        results2 = bs.select('div li.priceBoxItem div ul li') # Resultados do filtro da Biblioteca Beautiful Soup para a identificação dos parâmetros requisitados (Storage, CPU, Memory, Bandwidth)
+        
+        counter = 0 # Contador de tipo de filtro aplicado
+        count = False # Variável que quando acionada, irá incrementar o contador
+        reset = False # Variável que quando acionada, irá reiniciar o contador
+        for typing2 in results2:
+            if counter==0: # Quando o contador for 0, aplicar o padrão regex de busca por valores de Memory e depois de CPU
+                pattern= re.compile(r'[0-9]{1,4}\b GB')
+                memory_data = find_pattern(typing2,pattern)
+                if memory_data != None: 
+                    memory.append(memory_data)
+                pattern = re.compile(r'[0-9]{1,2}\b ((\bCPU\b)|(\bCPUs\b))')
+                cpu_data = find_pattern(typing2,pattern)
+                if cpu_data != None: 
+                    cpu.append(cpu_data)
+                    count = True    
+            elif counter==1: # Quando o contador for 1, aplicar o padrão regex de busca por valores de Storage
+                pattern = re.compile(r'[0-9]{2,3}\b GB SSD')
+                storage_data = find_pattern(typing2,pattern)
+                if storage_data != None: 
+                    storage.append(storage_data)
+                    count = True
+            elif counter==2: # Quando o contador for 2, aplicar o padrão regex de busca por valores de Bandwidth
+                pattern = re.compile(r'[0-9]{1,4}\b ((\bGB\b)|(\bTB\b))')
+                bandwidth_data = find_pattern(typing2,pattern)
+                if bandwidth_data != None: 
+                    bandwidth.append(bandwidth_data)
+                    reset = True    
+            if count == True: # Quando a variável é acionada, o contador é incrementado
+                counter+=1
+                count = False
+            if reset == True: # Quando a variável é acionada, o contador é reiniciado para 0
+                counter=0 
+                reset = False     
+        complete = [storage,cpu,memory,bandwidth,price] # Lista com todas as listas anteriores, que será retornada como resultado da função
+        return complete
+            
+def print_tela(url,value_check): # Função de demonstrar resultados no terminal
     data = webscraper(url) # Recebe os dados do conteudo do site
-    if (len(data[0])==10)and(len(data[1])==10)and(len(data[2])==10)and(len(data[3])==10)and(len(data[4])==10): # Verificação de leitura correta, para não executar erros            
-        for item in range(10):
+    if (len(data[0])==value_check)and(len(data[1])==value_check)and(len(data[2])==value_check)and(len(data[3])==value_check)and(len(data[4])==value_check): # Verificação de leitura correta, para não executar erros            
+        for item in range(value_check):
             print("Instance {}: |Storage: {}|CPU: {}|Memory: {}| Bandwidth: {}| Price: {}".format(item+1,data[0][item],data[1][item],data[2][item],data[3][item],data[4][item])) # Valores da leitura do Site mostrados no terminal
     else:
         print("Houve alguma falha na leitura, o sistema será reiniciado")                  
 
-def save_json(url): # Função de salvar resultados como arquivos JSON
+def save_json(url,value_check): # Função de salvar resultados como arquivos JSON
 
     arquivo = input(("Digite o nome do arquivo JSON: "))+".json" # Selecionar o nome do arquivo
     results = webscraper(url) # Recebe os dados do conteudo do site
     data = {}
 
-    for item in range(10): # Organização dos dados em formato json
+    for item in range(value_check): # Organização dos dados em formato json
         instance = 'Instance {}'.format(item+1)
         data[instance] = {
             'Storage': results[0][item],
@@ -103,7 +149,7 @@ def save_json(url): # Função de salvar resultados como arquivos JSON
     with open(arquivo, "w") as outfile: # Salva no arquivo JSON
         json.dump(data, outfile)
 
-def save_csv(url): # Função de salvar resultados como arquivos JSON
+def save_csv(url,value_check): # Função de salvar resultados como arquivos JSON
 
     arquivo = input(("Digite o nome do arquivo CSV: "))+".csv" # Selecionar o nome do arquivo
     results = webscraper(url) # Recebe os dados do conteudo do site
@@ -111,7 +157,7 @@ def save_csv(url): # Função de salvar resultados como arquivos JSON
     f = csv.writer(open(arquivo, 'w')) # Cria o arquivo csv
     f.writerow(['Instances','Storage', 'CPU', 'Memory', 'Bandwidth', 'Price']) 
 
-    for item in range(10): # Organização dos dados na tabela
+    for item in range(value_check): # Organização dos dados na tabela
         instance = 'Instance {}'.format(item+1)
         f.writerow([instance,results[0][item],results[1][item],results[2][item],results[3][item],results[4][item]]) # Escreve os dados nas linhas    
 
@@ -127,8 +173,10 @@ def main(): # Função principal do menu interativo do robô Web Crawler
     if int(opcao)==1 or int(opcao)==2:
         if int(opcao)==1: # O link selecionado irá para o procedimento do BeautifulSoup
             url = url1
+            value_check = 10
         else: 
             url = url2  
+            value_check = 6
         print("Certo! Agora, de forma deseja mostrar os dados obtidos?")
         print("Opção 1: --print") # Seleção do modo print na tela
         print("Opção 2: --save_json") # Seleção do modo salvar em arquivo json
@@ -137,13 +185,13 @@ def main(): # Função principal do menu interativo do robô Web Crawler
         if int(modo)==1 or int(modo)==2 or int(modo)==3: # Casting da variável de opção de string para inteiro
             if int(modo)==1:
                 print("Certo! Os dados serão mostrados no terminal.")
-                print_tela(url)
+                print_tela(url,value_check)
             elif int(modo)==2:
                 print("Certo! Os dados serão salvados no formato JSON.")
-                save_json(url)
+                save_json(url,value_check)
             else:
                 print("Certo! Os dados serão salvados no formato CSV.")
-                save_csv(url)            
+                save_csv(url,value_check)            
             resposta = input(("Deseja finalizar a rotina (1), ou realizar novas leituras(2)? ")) # Opção de terminar o programa ou de voltar ao início do menu
             if int(resposta)==1 or int(resposta)==2:
                 os.system('clear')
