@@ -11,6 +11,7 @@ import os
 import time
 import re
 import json
+import csv
 
 def find_pattern(texts,pattern): # Função que aplica os filtros do Regex e retorna o resultado
     if re.search(pattern, texts.text) is not None: # Se a pesquisa não devolver None, o resultado é retornado
@@ -76,7 +77,7 @@ def webscraper(url): # Função de extrair informações de sites da web
     return complete
 
 def print_tela(url): # Função de demonstrar resultados no terminal
-    data = webscraper(url)
+    data = webscraper(url) # Recebe os dados do conteudo do site
     if (len(data[0])==10)and(len(data[1])==10)and(len(data[2])==10)and(len(data[3])==10)and(len(data[4])==10): # Verificação de leitura correta, para não executar erros            
         for item in range(10):
             print("Instance {}: |Storage: {}|CPU: {}|Memory: {}| Bandwidth: {}| Price: {}".format(item+1,data[0][item],data[1][item],data[2][item],data[3][item],data[4][item])) # Valores da leitura do Site mostrados no terminal
@@ -85,11 +86,11 @@ def print_tela(url): # Função de demonstrar resultados no terminal
 
 def save_json(url): # Função de salvar resultados como arquivos JSON
 
-    arquivo = input(("Digite o nome do arquivo JSON: "))+".json"
-    results = webscraper(url)
+    arquivo = input(("Digite o nome do arquivo JSON: "))+".json" # Selecionar o nome do arquivo
+    results = webscraper(url) # Recebe os dados do conteudo do site
     data = {}
 
-    for item in range(10):
+    for item in range(10): # Organização dos dados em formato json
         instance = 'Instance {}'.format(item+1)
         data[instance] = {
             'Storage': results[0][item],
@@ -99,8 +100,20 @@ def save_json(url): # Função de salvar resultados como arquivos JSON
             'Price': results[4][item]
         }
 
-    with open(arquivo, "w") as outfile:
+    with open(arquivo, "w") as outfile: # Salva no arquivo JSON
         json.dump(data, outfile)
+
+def save_csv(url): # Função de salvar resultados como arquivos JSON
+
+    arquivo = input(("Digite o nome do arquivo CSV: "))+".csv" # Selecionar o nome do arquivo
+    results = webscraper(url) # Recebe os dados do conteudo do site
+
+    f = csv.writer(open(arquivo, 'w')) # Cria o arquivo csv
+    f.writerow(['Instances','Storage', 'CPU', 'Memory', 'Bandwidth', 'Price']) 
+
+    for item in range(10): # Organização dos dados na tabela
+        instance = 'Instance {}'.format(item+1)
+        f.writerow([instance,results[0][item],results[1][item],results[2][item],results[3][item],results[4][item]]) # Escreve os dados nas linhas    
 
 def main(): # Função principal do menu interativo do robô Web Crawler
     url1 = 'https://www.vultr.com/products/cloud-compute/#pricing/' # Link de leitura da primeira parte do desafio
@@ -121,15 +134,19 @@ def main(): # Função principal do menu interativo do robô Web Crawler
         print("Opção 2: --save_json") # Seleção do modo salvar em arquivo json
         print("Opção 3: --save_csv") # Seleção do modo salvar em arquivo csv
         modo = input(("Selecione a opção desejada (1, 2 ou 3): "))
-        if int(modo)==1 or int(modo)==2: # Casting da variável de opção de string para inteiro
+        if int(modo)==1 or int(modo)==2 or int(modo)==3: # Casting da variável de opção de string para inteiro
             if int(modo)==1:
                 print("Certo! Os dados serão mostrados no terminal.")
                 print_tela(url)
             elif int(modo)==2:
                 print("Certo! Os dados serão salvados no formato JSON.")
-                save_json(url)    
+                save_json(url)
+            else:
+                print("Certo! Os dados serão salvados no formato CSV.")
+                save_csv(url)            
             resposta = input(("Deseja finalizar a rotina (1), ou realizar novas leituras(2)? ")) # Opção de terminar o programa ou de voltar ao início do menu
             if int(resposta)==1 or int(resposta)==2:
+                os.system('clear')
                 return resposta
             else:
                 print("Opção inválida, reiniciando o sistema.") # Qualquer valor inválido no input do terminal irá fazer o programa retornar ao início do loop
